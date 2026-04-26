@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remon Panel Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      height: 100vh;
+      background: #020617;
+      padding: 20px;
+      border-right: 1px solid #1e293b;
+    }
+
+    .sidebar h2 {
+      color: #38bdf8;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu button {
+      background: #1e293b;
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      color: #cbd5f5;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .menu button:hover {
+      background: #38bdf8;
+      color: #000;
+    }
+
+    .main {
+      flex: 1;
+      padding: 30px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 20px;
+      max-width: 400px;
+      box-shadow: 0 0 20px rgba(0,191,255,0.2);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #38bdf8;
+    }
+
+    label {
+      font-size: 13px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 15px;
+      border-radius: 10px;
+      border: none;
+      background: #0f172a;
+      color: #fff;
+    }
+
+    input:focus {
+      outline: 2px solid #38bdf8;
+    }
+
+    button.action {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-size: 13px;
+      text-align: center;
+      color: #22c55e;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>Remon</h2>
+    <div class="menu">
+      <button onclick="showPage('dashboard')">Dashboard</button>
+      <button onclick="showPage('connect')">Connect Domain</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div id="dashboard" class="page">
+      <h1>Dashboard</h1>
+      <p>Selamat datang di Remon Panel 🚀</p>
+      <p>Gunakan menu di samping untuk menghubungkan domain kamu.</p>
+    </div>
+
+    <div id="connect" class="page" style="display:none;">
+      <div class="card">
+        <h1>Connect Domain</h1>
+
+        <label>Zone ID</label>
+        <input type="text" id="zone">
+
+        <label>API Token</label>
+        <input type="text" id="token">
+
+        <label>Domain</label>
+        <input type="text" id="domain">
+
+        <button class="action" onclick="connectDomain()">Connect</button>
+
+        <div class="result" id="result"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      document.getElementById(page).style.display = 'block';
+    }
+
+    async function connectDomain() {
+      const zone = document.getElementById('zone').value;
+      const token = document.getElementById('token').value;
+      const domain = document.getElementById('domain').value;
+
+      localStorage.setItem('zone', zone);
+      localStorage.setItem('token', token);
+      localStorage.setItem('domain', domain);
+
+      try {
+        const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${zone}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('result').innerText = '✅ Berhasil terkoneksi!';
+        } else {
+          document.getElementById('result').innerText = '❌ Gagal konek';
+        }
+      } catch (err) {
+        document.getElementById('result').innerText = '❌ Error koneksi';
+      }
+    }
+
+    // Load saved data
+    window.onload = () => {
+      document.getElementById('zone').value = localStorage.getItem('zone') || '';
+      document.getElementById('token').value = localStorage.getItem('token') || '';
+      document.getElementById('domain').value = localStorage.getItem('domain') || '';
+    }
+  </script>
+
+</body>
+</html>
